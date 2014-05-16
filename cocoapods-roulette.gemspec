@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["mail@heikobehrens.net", "marceljackwerth@gmail.com"]
   spec.summary       = %{Builds an empty project with three random gems.}
   spec.description   = %q{A CocoaPods plugin which gives you a combination of three random pods to build your app with.}
-  spec.homepage      = "https://github.com/cocoapods/cocoapods-roulette"
+  spec.homepage      = "http://sirlantis.github.io/cocoapods-roulette/"
   spec.license       = "MIT"
 
   spec.files         = Dir["lib/**/*.rb"] + Dir["bin/*"] + %w{ LICENSE }
