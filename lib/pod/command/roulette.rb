@@ -85,10 +85,17 @@ END
         update_if_necessary!
 
         all_specs = Pod::SourcesManager.all_sets
-        # TODO: reactivate only those pods that support iOS
-        # all_specs.reject!{ |set| !set.specification.available_platforms.map(&:name).include?(:ios) }
 
-        picked_specs = all_specs.sample 3
+        picked_specs = []
+        # yes, this looks ugly but filtering all_specs before takes 10s on a MBP 2011
+        while picked_specs.length < 3
+          picked_spec = all_specs.sample
+          unless picked_specs.include? picked_spec
+            if picked_spec.specification.available_platforms.map(&:name).include?(:ios)
+              picked_specs << picked_spec
+            end
+          end
+        end
 
         project_name = picked_specs.map do |random_spec|
           humanize_pod_name random_spec.name
