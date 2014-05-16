@@ -4,9 +4,7 @@ gemspec
 
 group :development do
   gem 'cocoapods'
-  gem 'bacon'
-  gem 'mocha-on-bacon'
-  gem 'prettybacon'
+  gem 'rspec', '3.0.0.beta2'
   if RUBY_VERSION >= '1.9.3'
     gem 'rubocop'
   end

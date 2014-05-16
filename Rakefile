@@ -29,7 +29,7 @@ end
 desc "Runs all the specs"
 task :spec do
   start_time = Time.now
-  sh "bundle exec bacon #{specs('**')}"
+  sh "bundle exec rspec #{specs('**')}"
   duration = Time.now - start_time
   puts "Tests completed in #{duration}s"
   Rake::Task["rubocop"].invoke
