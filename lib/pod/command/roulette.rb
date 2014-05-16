@@ -127,7 +127,7 @@ END
           humanize_pod_name random_spec.name
         end.join ''
 
-        print project_name + "\n"
+        UI.puts project_name.green
 
         if yesno "Are you happy with that project?"
           create_project project_name, picked_specs
