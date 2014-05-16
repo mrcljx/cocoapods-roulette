@@ -1,3 +1,4 @@
+# encoding: utf-8
 module Pod
   class Command
     class Roulette < Command
@@ -62,11 +63,12 @@ module Pod
       end
 
       def tweet_text(project_name)
-        "# LOL, got a '#{project_name}' from PodRoulette by @sirlantis and @hbehrens - fun stuff from @uikonf \n"
+        random_emoji = [0x1F602, 0x1F604, 0x1F60D, 0x1F61C, 0x1F62E, 0x1F62F, 0x1F633, 0x1F640].pack("U*").split("").sample
+        "#{random_emoji}  got '#{project_name}' from `pod roulette` by @sirlantis and @hbehrens - fun stuff from @uikonf"
       end
 
       def pod_file_content(project_name, specs)
-        s = "platform :ios, '7.0'\n#{tweet_text project_name}\n\n"
+        s = "platform :ios, '7.0'\n\n"
 
         specs.each do |spec|
           pod = Pod::Specification::Set::Presenter.new spec
@@ -130,7 +132,11 @@ END
         UI.puts project_name.green
 
         if yesno "Are you happy with that project?"
-          create_project project_name, picked_specs
+          if create_project project_name, picked_specs
+            sleep 0.1 # make sure all output from liftoff has been flushed
+            UI.puts "\n\n" + tweet_text(project_name) + "\n\n"
+          end
+
           throw :done
         end
 
