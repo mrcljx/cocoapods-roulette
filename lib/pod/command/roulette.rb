@@ -18,6 +18,24 @@ module Pod
         super
       end
 
+      def liftoff_installed?
+        `which liftoff`
+        $?.exitstatus.zero?
+      end
+
+      def validate!
+        super
+
+        unless liftoff_installed?
+          help! [
+            'PodRoulette requires Liftoff (which has to be installed through Homebrew). Please install it first.',
+            '',
+            '$ brew tap thoughtbot/formulae',
+            '$ brew install liftoff'
+          ].join("\n")
+        end
+      end
+
       def humanize_pod_name(name)
         name = name.gsub /(^|\W)(\w)/ do |match|
           Regexp.last_match[2].upcase
