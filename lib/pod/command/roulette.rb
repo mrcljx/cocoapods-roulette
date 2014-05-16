@@ -26,6 +26,43 @@ module Pod
         name.gsub /^[A-Z]*([A-Z][^A-Z].*)$/, '\1'
       end
 
+      def tweet_text(project_name)
+        "# LOL, got a '#{project_name}' from PodRoulette by @sirlantis and @hbehrens - fun stuff from @uikonf \n"
+      end
+
+      def pod_file_content(project_name, specs)
+        s = "platform :ios, '7.0'\n#{tweet_text project_name}\n\n"
+
+        specs.each do |spec|
+          pod = Pod::Specification::Set::Presenter.new spec
+          s += "pod '#{pod.name}', '~> #{pod.version}'\n"
+        end
+        s+= <<END
+
+target :unit_tests, :exclusive => true do
+  link_with 'UnitTests'
+  pod 'Specta'
+  pod 'Expecta'
+  pod 'OCMock'
+  pod 'OHHTTPStubs'
+end
+
+END
+      end
+
+      def create_liftoff_templates(project_name, specs)
+        path = '.liftoff/templates'
+        FileUtils.mkdir_p path
+        File.open(path+'/Podfile', 'w') do |f|
+          f.puts pod_file_content(project_name, specs)
+        end
+      end
+
+      def create_project(project_name, specs)
+        create_liftoff_templates project_name, specs
+        system "liftoff", "-n", project_name, '--cocoapods', '--strict-prompts', out: $stdout, in: $stdin
+      end
+
       def run
         update_if_necessary!
 
@@ -41,6 +78,7 @@ module Pod
 
         print project_name + "\n"
 
+        create_project project_name, picked_specs
       end
       
       def update_if_necessary!
