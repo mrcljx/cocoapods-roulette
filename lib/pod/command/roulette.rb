@@ -19,19 +19,24 @@ module Pod
         super
       end
 
+      def clear_prev_line(value = nil)
+        print "\r\e[A\e[K"
+        value
+      end
+
       def yesno(question, default = false)
         UI.print question
         UI.print(default ? ' (Y/n) ' : ' (y/N) ')
         answer = UI.gets.chomp
 
         if answer.empty?
-          default
-        elsif /y/i =~ answer
-          true
-        elsif /n/i =~ answer
-          false
+          clear_prev_line default
+        elsif /^y$/i =~ answer
+          clear_prev_line true
+        elsif /^n$/i =~ answer
+          clear_prev_line false
         else
-          UI.warn "\nPlease answer with 'y' or 'n'."
+          UI.puts "Please answer with 'y' or 'n'.".red
           yesno question, default
         end
       end
@@ -129,7 +134,7 @@ END
           humanize_pod_name random_spec.name
         end.join ''
 
-        UI.puts project_name.green
+        UI.puts "\n" + project_name.green
 
         if yesno "Are you happy with that project?"
           if create_project project_name, picked_specs
@@ -138,6 +143,10 @@ END
           end
 
           throw :done
+        else
+          clear_prev_line
+          clear_prev_line
+          UI.puts project_name.cyan
         end
 
       end
