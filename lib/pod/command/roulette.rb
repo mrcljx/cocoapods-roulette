@@ -18,6 +18,23 @@ module Pod
         super
       end
 
+      def yesno(question, default = false)
+        UI.print question
+        UI.print(default ? ' (Y/n) ' : ' (y/N) ')
+        answer = UI.gets.chomp
+
+        if answer.empty?
+          default
+        elsif /y/i =~ answer
+          true
+        elsif /n/i =~ answer
+          false
+        else
+          UI.warn "\nPlease answer with 'y' or 'n'."
+          yesno question, default
+        end
+      end
+
       def liftoff_installed?
         `which liftoff`
         $?.exitstatus.zero?
@@ -47,11 +64,19 @@ module Pod
       def run
         update_if_necessary!
 
-        all_specs = Pod::SourcesManager.all_sets
+        @all_specs = Pod::SourcesManager.all_sets
         # TODO: reactivate only those pods that support iOS
         # all_specs.reject!{ |set| !set.specification.available_platforms.map(&:name).include?(:ios) }
 
-        picked_specs = all_specs.sample 3
+        catch :done do
+          while true do
+            next_round
+          end
+        end
+      end
+
+      def next_round
+        picked_specs = @all_specs.sample 3
 
         project_name = picked_specs.map do |random_spec|
           humanize_pod_name random_spec.name
@@ -59,6 +84,10 @@ module Pod
 
         print project_name + "\n"
 
+        if yesno "Are you happy with that project?"
+          # build project
+          throw :done
+        end
       end
       
       def update_if_necessary!
