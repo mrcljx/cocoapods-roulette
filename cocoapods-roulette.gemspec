@@ -7,7 +7,9 @@ Gem::Specification.new do |spec|
   spec.name          = "cocoapods-roulette"
   spec.version       = CocoapodsRoulette::VERSION
   spec.authors       = ["Heiko Behrens", "Marcel Jackwerth"]
-  spec.summary       = %q{CocoaPods plugin which gives you a combination of three random pods to build your app with.}
+  spec.email         = ["mail@heikobehrens.net", "marceljackwerth@gmail.com"]
+  spec.summary       = %{Builds an empty project with three random gems.}
+  spec.description   = %q{A CocoaPods plugin which gives you a combination of three random pods to build your app with.}
   spec.homepage      = "https://github.com/cocoapods/cocoapods-roulette"
   spec.license       = "MIT"
 
