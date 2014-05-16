@@ -18,6 +18,23 @@ module Pod
         super
       end
 
+      def yesno(question, default = false)
+        UI.print question
+        UI.print(default ? ' (Y/n) ' : ' (y/N) ')
+        answer = UI.gets.chomp
+
+        if answer.empty?
+          default
+        elsif /y/i =~ answer
+          true
+        elsif /n/i =~ answer
+          false
+        else
+          UI.warn "\nPlease answer with 'y' or 'n'."
+          yesno question, default
+        end
+      end
+
       def liftoff_installed?
         `which liftoff`
         $?.exitstatus.zero?
@@ -84,12 +101,21 @@ END
       def run
         update_if_necessary!
 
-        all_specs = Pod::SourcesManager.all_sets
+        @all_specs = Pod::SourcesManager.all_sets
+
+        catch :done do
+          while true do
+            next_round
+          end
+        end
+      end
+
+      def next_round
 
         picked_specs = []
         # yes, this looks ugly but filtering all_specs before takes 10s on a MBP 2011
         while picked_specs.length < 3
-          picked_spec = all_specs.sample
+          picked_spec = @all_specs.sample
           unless picked_specs.include? picked_spec
             if picked_spec.specification.available_platforms.map(&:name).include?(:ios)
               picked_specs << picked_spec
@@ -103,7 +129,11 @@ END
 
         print project_name + "\n"
 
-        create_project project_name, picked_specs
+        if yesno "Are you happy with that project?"
+          create_project project_name, picked_specs
+          throw :done
+        end
+
       end
       
       def update_if_necessary!
