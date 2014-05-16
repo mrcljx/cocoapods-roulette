@@ -137,6 +137,10 @@ END
         UI.puts "\n" + project_name.green
 
         if yesno "Are you happy with that project?"
+          UI.puts "\nPerfect, your project will use"
+          UI.puts (picked_specs.map(&:name).join ", ") + "."
+          UI.puts "Just a few more questions before we start:\n\n"
+
           if create_project project_name, picked_specs
             sleep 0.1 # make sure all output from liftoff has been flushed
             UI.puts "\n\n" + tweet_text(project_name) + "\n\n"
