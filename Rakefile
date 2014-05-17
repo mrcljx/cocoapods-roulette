@@ -2,16 +2,6 @@ require "bundler/gem_tasks"
 
 task :default => "spec"
 
-desc "Builds the gem"
-task :gem do
-  `gem build cocoapods-roulette.gemspec`
-end
-
-desc "Installs as local gem"
-task :install => :gem do
-  `gem install --local cocoapods-roulette`
-end
-
 # Bootstrap
 #-----------------------------------------------------------------------------#
 
