@@ -14,7 +14,7 @@ module Pod
         ]].concat(super)
       end
       
-      EMOJIS = [0x1F602, 0x1F604, 0x1F60D, 0x1F61C, 0x1F62E, 0x1F62F, 0x1F633, 0x1F640].pack("U*").split("")
+      EMOJIS = [0x1F602, 0x1F604, 0x1F60D, 0x1F61C, 0x1F62E, 0x1F62F, 0x1F633, 0x1F640].pack("U*").chars
 
       def initialize(argv)
         @update = argv.flag?('update')
