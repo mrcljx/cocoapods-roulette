@@ -13,6 +13,8 @@ module Pod
           "--update", "Run `pod repo update` before rouletting",
         ]].concat(super)
       end
+      
+      EMOJIS = [0x1F602, 0x1F604, 0x1F60D, 0x1F61C, 0x1F62E, 0x1F62F, 0x1F633, 0x1F640].pack("U*").split("")
 
       def initialize(argv)
         @update = argv.flag?('update')
@@ -69,7 +71,7 @@ module Pod
       end
 
       def tweet_text(project_name)
-        random_emoji = [0x1F602, 0x1F604, 0x1F60D, 0x1F61C, 0x1F62E, 0x1F62F, 0x1F633, 0x1F640].pack("U*").split("").sample
+        random_emoji = EMOJIS.sample
         "#{random_emoji}  got '#{project_name}' from `pod roulette` by @sirlantis and @hbehrens - fun stuff from @uikonf"
       end
 
