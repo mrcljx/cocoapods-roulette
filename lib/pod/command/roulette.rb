@@ -62,27 +62,64 @@ module Pod
         end
       end
 
-      def humanize_pod_name(name)
-        name = name.gsub /(^|\W)(\w)/ do |match|
-          Regexp.last_match[2].upcase
-        end
-        name = name.gsub /[^a-z]/i, ''
-        name.gsub /^[A-Z]*([A-Z][^A-Z].*)$/, '\1'
+      def all_specs
+        @all_specs ||= Pod::SourcesManager.all_sets
       end
 
-      def tweet_text(project_name)
-        random_emoji = EMOJIS.sample
-        "#{random_emoji}  got '#{project_name}' from `pod roulette` by @sirlantis and @hbehrens - fun stuff from @uikonf"
-      end
+      def run
+        update_if_necessary!
 
-      def pod_file_content(project_name, specs)
-        s = "platform :ios, '7.0'\n\n"
-
-        specs.each do |spec|
-          pod = Pod::Specification::Set::Presenter.new spec
-          s += "pod '#{pod.name}', '~> #{pod.version}'\n"
+        catch :done do
+          while true do
+            next_round do |success, configration|
+              if success
+                configration.create
+                throw :done
+              else
+                # continue forever
+              end
+            end
+          end
         end
-        s+= <<END
+      end
+      
+      class Configuration
+        attr_reader :specs
+        
+        def initialize(specs)
+          @specs = specs
+        end
+        
+        def name
+          specs.map do |spec|
+            self.class.humanize_pod_name spec.name
+          end.join ''          
+        end
+        
+        def create
+          UI.puts "\nPerfect, your project will use"
+          UI.puts (specs.map(&:name).join ", ") + "."
+          UI.puts "Just a few more questions before we start:\n\n"
+
+          if create_project
+            sleep 0.1 # make sure all output from liftoff has been flushed
+            UI.puts "\n\n" + tweet_text(name) + "\n\n"
+          end
+        end
+        
+        def tweet_text(project_name)
+          random_emoji = EMOJIS.sample
+          "#{random_emoji}  got '#{name}' from `pod roulette` by @sirlantis and @hbehrens - fun stuff from @uikonf"
+        end
+
+        def pod_file_content
+          s = "platform :ios, '7.0'\n\n"
+
+          specs.each do |spec|
+            pod = Pod::Specification::Set::Presenter.new spec
+            s += "pod '#{pod.name}', '~> #{pod.version}'\n"
+          end
+          s+= <<END
 
 target :unit_tests, :exclusive => true do
   link_with 'UnitTests'
@@ -93,71 +130,66 @@ target :unit_tests, :exclusive => true do
 end
 
 END
-      end
-
-      def create_liftoff_templates(project_name, specs)
-        path = '.liftoff/templates'
-        FileUtils.mkdir_p path
-        File.open(path+'/Podfile', 'w') do |f|
-          f.puts pod_file_content(project_name, specs)
         end
-      end
 
-      def create_project(project_name, specs)
-        create_liftoff_templates project_name, specs
-        system "liftoff", "-n", project_name, '--cocoapods', '--strict-prompts', out: $stdout, in: $stdin
-      end
-
-      def run
-        update_if_necessary!
-
-        @all_specs = Pod::SourcesManager.all_sets
-
-        catch :done do
-          while true do
-            next_round
+        def create_liftoff_templates
+          # should we use Dir.home?
+          path = File.join '.liftoff', 'templates'
+          FileUtils.mkdir_p path
+          
+          File.open(File.join(path, 'Podfile'), 'w') do |f|
+            f.puts pod_file_content
           end
         end
+
+        def create_project
+          create_liftoff_templates
+          system "liftoff", "-n", name, '--cocoapods', '--strict-prompts', out: $stdout, in: $stdin
+        end
+        
+        def self.humanize_pod_name(name)
+          name = name.gsub /(^|\W)(\w)/ do |match|
+            Regexp.last_match[2].upcase
+          end
+          name = name.gsub /[^a-z]/i, ''
+          name.gsub /^[A-Z]*([A-Z][^A-Z].*)$/, '\1'
+        end
       end
-
-      def next_round
-
-        picked_specs = []
-        # yes, this looks ugly but filtering all_specs before takes 10s on a MBP 2011
-        while picked_specs.length < 3
-          picked_spec = @all_specs.sample
-          unless picked_specs.include? picked_spec
-            if picked_spec.specification.available_platforms.map(&:name).include?(:ios)
-              picked_specs << picked_spec
+      
+      def random_specs
+        [].tap do |picked_specs|
+          # yes, this looks ugly but filtering all_specs before takes 10s on a MBP 2011
+          while picked_specs.length < 3
+            picked_spec = all_specs.sample
+            unless picked_specs.include? picked_spec
+              if picked_spec.specification.available_platforms.map(&:name).include?(:ios)
+                picked_specs << picked_spec
+              end
             end
           end
         end
+      end
+      
+      def next_configuration
+        Configuration.new random_specs
+      end
 
-        project_name = picked_specs.map do |random_spec|
-          humanize_pod_name random_spec.name
-        end.join ''
+      def next_round
+        raise "requires block" unless block_given?
 
-        UI.puts "\n" + project_name.green
+        configration = next_configuration
+        UI.puts "\n" + configration.name.green
 
         if yesno "Are you happy with that project?"
-          UI.puts "\nPerfect, your project will use"
-          UI.puts (picked_specs.map(&:name).join ", ") + "."
-          UI.puts "Just a few more questions before we start:\n\n"
-
-          if create_project project_name, picked_specs
-            sleep 0.1 # make sure all output from liftoff has been flushed
-            UI.puts "\n\n" + tweet_text(project_name) + "\n\n"
-          end
-
-          throw :done
+          yield true, configration
         else
           clear_prev_line
           clear_prev_line
-          UI.puts project_name.cyan
+          UI.puts configration.name.cyan
+          yield false, configration
         end
-
       end
-      
+            
       def update_if_necessary!
         Repo.new(ARGV.new(["update"])).run if @update
       end
