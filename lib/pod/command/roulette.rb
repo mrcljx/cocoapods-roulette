@@ -15,6 +15,7 @@ module Pod
       end
       
       EMOJIS = [0x1F602, 0x1F604, 0x1F60D, 0x1F61C, 0x1F62E, 0x1F62F, 0x1F633, 0x1F640].pack("U*").chars
+      THINGS = [0x1f37a, 0x1f378, 0x1f377, 0x1f354, 0x1f35d, 0x1f368, 0x1f36d, 0x1f36c].pack("U*").chars
 
       def initialize(argv)
         @update = argv.flag?('update')
@@ -173,12 +174,26 @@ END
       def next_configuration
         Configuration.new random_specs
       end
+      
+      def announce(configration)
+        UI.puts "\n\n"
+        
+        20.times do |n|
+          clear_prev_line
+          line = (0..(configration.name.size/2)).map { THINGS.sample }
+          UI.puts line.join("")
+          sleep 0.02
+        end
+          
+        clear_prev_line
+        UI.puts configration.name.green
+      end
 
       def next_round
         raise "requires block" unless block_given?
 
         configration = next_configuration
-        UI.puts "\n" + configration.name.green
+        announce configration
 
         if yesno "Are you happy with that project?"
           yield true, configration
