@@ -19,9 +19,8 @@ module Pod
         super
       end
 
-      def clear_prev_line(value = nil)
+      def clear_prev_line
         print "\r\e[A\e[K"
-        value
       end
 
       def yesno(question, default = false)
@@ -30,11 +29,13 @@ module Pod
         answer = UI.gets.chomp
 
         if answer.empty?
-          clear_prev_line default
+          clear_prev_line
+          default
         elsif /^y$/i =~ answer
-          clear_prev_line true
+          clear_prev_line 
+          true
         elsif /^n$/i =~ answer
-          clear_prev_line false
+          false
         else
           UI.puts "Please answer with 'y' or 'n'.".red
           yesno question, default
