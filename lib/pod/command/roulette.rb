@@ -64,7 +64,7 @@ module Pod
       end
 
       def all_specs
-        @all_specs ||= Pod::SourcesManager.all_sets
+        @all_specs ||= Pod::SourcesManager.aggregate.all_sets
       end
 
       def run
