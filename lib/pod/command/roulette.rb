@@ -181,7 +181,7 @@ END
         20.times do |n|
           clear_prev_line
           line = (0..(configration.name.size/2)).map { THINGS.sample }
-          UI.puts line.join("")
+          UI.puts line.join(" ")
           sleep 0.02
         end
 
