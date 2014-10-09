@@ -7,38 +7,38 @@ module Pod
       self.description = <<-DESC
         Only asks a few times before you have to settle for a podroulette configuration.
       DESC
-      
+
       WINK = [0x1f609].pack("U*")
       WEIRD_PROJECTS = %w(NotAGoodIdeaTableViewAspect)
-      
+
       def self.options
         Roulette.options
       end
-      
+
       attr_reader :roulette
 
       def initialize(argv)
         @roulette = Roulette.new argv
-        
+
         def @roulette.last_chance=(last_chance)
           @last_chance = last_chance
         end
-        
+
         def @roulette.yesno(question, default = false)
           question = "#{question} [#{'LAST CHANCE!'.red}]" if @last_chance
           super question, default
         end
-        
+
         super
       end
-      
+
       def tries
         3
       end
 
       def run
         roulette.update_if_necessary!
-        
+
         UI.puts "Greetings, Roulettathon attendee!"
         UI.puts
         UI.puts "You have #{(tries.to_s + ' chances').green.underline} of finding you a project today."
